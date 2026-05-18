@@ -1,5 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+  ORGANIZACAO
+  PARTICIPANTE
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+}
+
+enum StageCode {
+  GROUP
+  R32
+  R16
+  QF
+  SF
+  FINAL
+}
+
+enum BetOption {
+  HOME
+  DRAW
+  AWAY
+}
+
+enum BetDecisionType {
+  MAJORITY
+  ODDS_TIEBREAKER
+}
+
+model User {
+  id           String             @id @default(cuid())
+  name         String
+  email        String             @unique
+  passwordHash String
+  role         UserRole           @default(PARTICIPANTE)
+  participant  ParticipantProfile?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+model ParticipantProfile {
+  id              String         @id @default(cuid())
+  userId          String         @unique
+  user            User           @relation(fields: [userId], references: [id])
+  displayName     String
+  paidAmountCents Int            @default(0)
+  paymentStatus   PaymentStatus  @default(PENDING)
+  championTeamId  String?
+  championTeam    Team?          @relation(fields: [championTeamId], references: [id])
+  exactScoreHits  Int            @default(0)
+  predictions     Prediction[]
+  betVotes        BetVote[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Team {
+  id                    String               @id @default(cuid())
+  name                  String
+  fifaCode              String               @unique
+  homeMatches           Match[]              @relation("HomeTeam")
+  awayMatches           Match[]              @relation("AwayTeam")
+  championParticipants  ParticipantProfile[]
+}
+
+model Stage {
+  id         String    @id @default(cuid())
+  code       StageCode
+  orderIndex Int
+  lockAt     DateTime
+  matches    Match[]
+}
+
+model Match {
+  id                String       @id @default(cuid())
+  stageId           String
+  stage             Stage        @relation(fields: [stageId], references: [id])
+  homeTeamId        String
+  homeTeam          Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId        String
+  awayTeam          Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  kickoffAt         DateTime
+  officialHomeGoals Int?
+  officialAwayGoals Int?
+  isFinished        Boolean      @default(false)
+  predictions       Prediction[]
+  betVotes          BetVote[]
+  betDecision       BetDecision?
+}
+
+model Prediction {
+  id                 String             @id @default(cuid())
+  participantId      String
+  participant        ParticipantProfile @relation(fields: [participantId], references: [id])
+  matchId            String
+  match              Match              @relation(fields: [matchId], references: [id])
+  predictedHomeGoals Int
+  predictedAwayGoals Int
+  pointsAwarded      Int                @default(0)
+  submittedAt        DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@unique([participantId, matchId])
+}
+
+model BetVote {
+  id            String             @id @default(cuid())
+  matchId       String
+  match         Match              @relation(fields: [matchId], references: [id])
+  participantId String
+  participant   ParticipantProfile @relation(fields: [participantId], references: [id])
+  option        BetOption
+  createdAt     DateTime           @default(now())
+
+  @@unique([matchId, participantId])
+}
+
+model BetDecision {
+  id             String          @id @default(cuid())
+  matchId        String          @unique
+  match          Match           @relation(fields: [matchId], references: [id])
+  selectedOption BetOption
+  decisionType   BetDecisionType
+  selectedOdd    Decimal         @db.Decimal(8, 3)
+  stakeCents     Int
+  createdAt      DateTime        @default(now())
 }

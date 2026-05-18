@@ -3,7 +3,7 @@
 Aplicacao web para gestao do bolao da Copa do Mundo 2026.
 
 ## Status atual
-Sprint 0 concluida (fundacao tecnica).
+Sprint 1 em andamento (autenticacao + inscricao).
 
 ## O que foi entregue na Sprint 0
 - Estrutura base do app em Next.js + TypeScript.
@@ -28,7 +28,10 @@ npm install
 npm run dev
 ```
 
-## Proxima sprint (Sprint 1)
-- Cadastro/autenticacao.
-- Inscricao com confirmacao de pagamento.
-- Escolha da selecao campea na inscricao.
+## Funcionalidades ja implementadas na Sprint 1
+- Cadastro de conta (`/cadastro`).
+- Login por credenciais (`/login`).
+- Inscricao do participante (`/inscricao`):
+  - nome de exibicao no bolao;
+  - selecao campea;
+  - pagamento inicial como `PENDING` (pendente).
