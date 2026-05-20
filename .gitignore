@@ -6,4 +6,4 @@ node_modules
 dist
 coverage
 *.log
-package-lock.json
+.npm-cache

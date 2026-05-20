@@ -39,6 +39,13 @@ enum BetDecisionType {
   ODDS_TIEBREAKER
 }
 
+enum BetSettlementStatus {
+  PENDING
+  WON
+  LOST
+  VOID
+}
+
 model User {
   id           String             @id @default(cuid())
   name         String
@@ -48,6 +55,15 @@ model User {
   participant  ParticipantProfile?
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
+}
+
+model AppConfig {
+  id             String   @id @default(cuid())
+  singletonKey   String   @unique
+  championTeamId String?
+  championTeam   Team?    @relation(fields: [championTeamId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model ParticipantProfile {
@@ -70,14 +86,29 @@ model Team {
   id                    String               @id @default(cuid())
   name                  String
   fifaCode              String               @unique
+  groupId               String?
+  group                 WorldCupGroup?       @relation(fields: [groupId], references: [id])
+  groupPosition         Int?
   homeMatches           Match[]              @relation("HomeTeam")
   awayMatches           Match[]              @relation("AwayTeam")
+  advancedMatches       Match[]              @relation("AdvancingTeam")
   championParticipants  ParticipantProfile[]
+  officialChampionConfigs AppConfig[]
+
+  @@unique([groupId, groupPosition])
+}
+
+model WorldCupGroup {
+  id         String  @id @default(cuid())
+  code       String  @unique
+  orderIndex Int
+  teams      Team[]
+  matches    Match[]
 }
 
 model Stage {
   id         String    @id @default(cuid())
-  code       StageCode
+  code       StageCode @unique
   orderIndex Int
   lockAt     DateTime
   matches    Match[]
@@ -85,15 +116,21 @@ model Stage {
 
 model Match {
   id                String       @id @default(cuid())
+  matchNumber       Int?         @unique
   stageId           String
   stage             Stage        @relation(fields: [stageId], references: [id])
+  groupId           String?
+  group             WorldCupGroup? @relation(fields: [groupId], references: [id])
   homeTeamId        String
   homeTeam          Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
   awayTeamId        String
   awayTeam          Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
-  kickoffAt         DateTime
+  kickoffAt         DateTime?
+  venue             String?
   officialHomeGoals Int?
   officialAwayGoals Int?
+  advancingTeamId   String?
+  advancingTeam     Team?        @relation("AdvancingTeam", fields: [advancingTeamId], references: [id])
   isFinished        Boolean      @default(false)
   predictions       Prediction[]
   betVotes          BetVote[]
@@ -128,12 +165,17 @@ model BetVote {
 }
 
 model BetDecision {
-  id             String          @id @default(cuid())
-  matchId        String          @unique
-  match          Match           @relation(fields: [matchId], references: [id])
-  selectedOption BetOption
-  decisionType   BetDecisionType
-  selectedOdd    Decimal         @db.Decimal(8, 3)
-  stakeCents     Int
-  createdAt      DateTime        @default(now())
+  id               String              @id @default(cuid())
+  matchId          String              @unique
+  match            Match               @relation(fields: [matchId], references: [id])
+  selectedOption   BetOption
+  decisionType     BetDecisionType
+  selectedOdd      Decimal             @db.Decimal(8, 3)
+  stakeCents       Int
+  balanceBeforeCents Int
+  returnCents      Int                 @default(0)
+  balanceAfterCents  Int?
+  settlementStatus BetSettlementStatus @default(PENDING)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 }

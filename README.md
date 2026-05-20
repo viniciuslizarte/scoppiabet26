@@ -3,7 +3,14 @@
 Aplicacao web para gestao do bolao da Copa do Mundo 2026.
 
 ## Status atual
-Sprint 1 em andamento (autenticacao + inscricao).
+Sprint 6 concluida: premiacao final, ranking, transparencia dos palpites e Bet do Bolao operacional.
+
+## Roadmap
+As decisoes de produto e o plano de sprints ate producao estao documentados em `docs/roadmap-producao.md`.
+
+## Deploy e operacao
+- Guia Supabase + Vercel: `docs/deploy-supabase-vercel.md`.
+- Checklist do administrador: `docs/checklist-operacao-admin.md`.
 
 ## O que foi entregue na Sprint 0
 - Estrutura base do app em Next.js + TypeScript.
@@ -26,6 +33,15 @@ npm install
 3. Rodar app:
 ```bash
 npm run dev
+```
+
+## Comandos uteis
+```bash
+npm run prisma:validate
+npm run prisma:generate
+npm run prisma:migrate:deploy
+npm run db:seed
+npm run build
 ```
 
 ## Funcionalidades ja implementadas na Sprint 1

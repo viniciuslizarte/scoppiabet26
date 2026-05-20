@@ -9,6 +9,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:validate": "prisma validate",
     "db:seed": "node prisma/seed.mjs"
   },
   "dependencies": {
@@ -22,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.17.0",
     "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",

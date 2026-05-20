@@ -1,10 +1,11 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { Suspense } from "react";
 import { signIn, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -67,5 +68,22 @@ export default function LoginPage() {
         {error ? <p className="message-error">{error}</p> : null}
       </section>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="shell" style={{ maxWidth: 640 }}>
+          <section className="card">
+            <h1>Entrar</h1>
+            <p className="muted">Carregando...</p>
+          </section>
+        </main>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
